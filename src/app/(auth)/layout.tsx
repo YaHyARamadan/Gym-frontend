@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PlateStackDecor } from "@/shared/ui/BrandMark";
 
 export const metadata: Metadata = {
   title: {
@@ -8,8 +9,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Auth layout — centered card on gradient background.
- * Shared by /login, /signup, /accept-invite.
+ * Auth layout — dark "gym floor" backdrop shared by /login, /signup, /accept-invite.
+ * Layered grid + glow + plate silhouettes + grain replace the old flat background;
+ * the white card floats above it all.
  */
 export default function AuthLayout({
   children,
@@ -17,21 +19,16 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="auth-bg min-h-screen flex items-center justify-center p-4">
-      {/* Decorative top-left shape */}
-      <div
-        aria-hidden="true"
-        className="fixed top-0 right-0 w-96 h-96 rounded-full bg-gym-yellow/5 -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none"
-      />
-      {/* Decorative bottom-right shape */}
-      <div
-        aria-hidden="true"
-        className="fixed bottom-0 left-0 w-72 h-72 rounded-full bg-gym-black/3 translate-y-1/2 -translate-x-1/2 blur-2xl pointer-events-none"
-      />
+    <main className="auth-shell">
+      <div className="auth-topstripe" aria-hidden="true" />
 
-      <div className="relative z-10 w-full animate-card-enter">
-        {children}
-      </div>
+      <div className="auth-glow auth-glow--yellow" aria-hidden="true" />
+      <div className="auth-glow auth-glow--maroon" aria-hidden="true" />
+
+      <PlateStackDecor className="auth-plates auth-plates--left hidden md:block" />
+      <PlateStackDecor className="auth-plates auth-plates--right hidden md:block" />
+
+      <div className="relative z-10 w-full flex justify-center">{children}</div>
     </main>
   );
 }

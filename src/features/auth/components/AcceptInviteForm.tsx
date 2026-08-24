@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, User, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, User, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { acceptInviteSchema, type AcceptInviteFormValues } from "../schemas";
 import { useAcceptInvite } from "../hooks/useAcceptInvite";
@@ -54,7 +54,7 @@ export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
             "text-sm text-gym-red font-medium flex items-center gap-2"
           )}
         >
-          <span aria-hidden="true" className="text-base">⚠</span>
+          <AlertTriangle className="h-4 w-4 shrink-0" strokeWidth={2} />
           {serverError}
         </div>
       )}

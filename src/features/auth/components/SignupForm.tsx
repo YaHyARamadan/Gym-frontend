@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Mail, Lock, User, Building2, Dumbbell } from "lucide-react";
+import { Eye, EyeOff, Mail, User, Building2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { signupSchema, type SignupFormValues } from "../schemas";
@@ -10,6 +10,7 @@ import { useSignup } from "../hooks/useSignup";
 import { Button } from "@/shared/ui/Button";
 import { Input } from "@/shared/ui/Input";
 import { PasswordStrength } from "@/shared/ui/PasswordStrength";
+import { BrandMark } from "@/shared/ui/BrandMark";
 import { cn } from "@/lib/utils";
 
 export function SignupForm() {
@@ -36,16 +37,17 @@ export function SignupForm() {
   return (
     <div className="w-full max-w-[400px] mx-auto">
       {/* Brand header */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="h-14 w-14 rounded-2xl bg-gym-yellow flex items-center justify-center shadow-lg mb-4">
-          <Dumbbell className="h-7 w-7 text-gym-black" strokeWidth={2.5} />
-        </div>
-        <h1 className="text-2xl font-bold text-gym-black font-cairo">إنشاء حساب جديد</h1>
-        <p className="text-sm text-gym-text-secondary mt-1">لمالكي الصالات الرياضية فقط</p>
+      <div className="flex flex-col items-center mb-7">
+        <BrandMark tone="dark" />
       </div>
 
       {/* Card */}
-      <div className="bg-gym-surface rounded-3xl border border-gym-border shadow-[0_4px_24px_rgba(0,0,0,0.07)] p-7">
+      <div className="auth-card">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gym-black font-cairo">إنشاء حساب جديد</h1>
+          <p className="text-sm text-gym-text-secondary mt-1.5">لمالكي الصالات الرياضية فقط</p>
+        </div>
+
         {serverError && (
           <div
             role="alert"
@@ -56,7 +58,7 @@ export function SignupForm() {
               "flex items-center gap-2"
             )}
           >
-            <span aria-hidden="true" className="text-base">⚠</span>
+            <AlertTriangle className="h-4 w-4 shrink-0" strokeWidth={2} />
             {serverError}
           </div>
         )}

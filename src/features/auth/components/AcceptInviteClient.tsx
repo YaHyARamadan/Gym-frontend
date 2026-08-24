@@ -1,14 +1,8 @@
 "use client";
 
-import { Dumbbell, AlertTriangle, Clock } from "lucide-react";
+import { AlertTriangle, Clock } from "lucide-react";
 import { AcceptInviteForm } from "./AcceptInviteForm";
-
-const ROLE_LABELS: Record<string, string> = {
-  BranchManager: "مدير فرع",
-  Reception: "موظف استقبال",
-  Coach: "مدرب",
-  Owner: "مالك",
-};
+import { BrandMark } from "@/shared/ui/BrandMark";
 
 interface AcceptInviteClientProps {
   token: string | undefined;
@@ -19,14 +13,11 @@ export function AcceptInviteClient({ token }: AcceptInviteClientProps) {
   if (!token) {
     return (
       <div className="w-full max-w-[400px] mx-auto">
-        <div className="flex flex-col items-center mb-8">
-          <div className="h-14 w-14 rounded-2xl bg-gym-yellow flex items-center justify-center shadow-lg mb-4">
-            <Dumbbell className="h-7 w-7 text-gym-black" strokeWidth={2.5} />
-          </div>
-          <h1 className="text-2xl font-bold text-gym-black font-cairo">قبول الدعوة</h1>
+        <div className="flex flex-col items-center mb-7">
+          <BrandMark tone="dark" />
         </div>
 
-        <div className="bg-gym-surface rounded-3xl border border-gym-border shadow-[0_4px_24px_rgba(0,0,0,0.07)] p-8 flex flex-col items-center gap-4 text-center">
+        <div className="auth-card flex flex-col items-center gap-4 text-center">
           <div className="h-14 w-14 rounded-full bg-gym-red-tint flex items-center justify-center">
             <AlertTriangle className="h-7 w-7 text-gym-red" strokeWidth={1.5} />
           </div>
@@ -48,12 +39,10 @@ export function AcceptInviteClient({ token }: AcceptInviteClientProps) {
   return (
     <div className="w-full max-w-[400px] mx-auto">
       {/* Brand header */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="h-14 w-14 rounded-2xl bg-gym-yellow flex items-center justify-center shadow-lg mb-4">
-          <Dumbbell className="h-7 w-7 text-gym-black" strokeWidth={2.5} />
-        </div>
-        <h1 className="text-2xl font-bold text-gym-black font-cairo">قبول الدعوة</h1>
-        <p className="text-sm text-gym-text-secondary mt-1">فعّل حسابك للبدء</p>
+      <div className="flex flex-col items-center mb-7">
+        <BrandMark tone="dark" />
+        <h1 className="text-2xl font-bold text-white font-cairo mt-4">قبول الدعوة</h1>
+        <p className="text-sm text-white/60 mt-1">فعّل حسابك للبدء</p>
       </div>
 
       {/* Invite info notice */}
@@ -65,7 +54,7 @@ export function AcceptInviteClient({ token }: AcceptInviteClientProps) {
       </div>
 
       {/* Form card */}
-      <div className="bg-gym-surface rounded-3xl border border-gym-border shadow-[0_4px_24px_rgba(0,0,0,0.07)] p-7">
+      <div className="auth-card">
         <AcceptInviteForm token={token} />
       </div>
     </div>
