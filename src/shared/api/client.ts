@@ -11,7 +11,7 @@ const apiClient = axios.create({
 // ── Request interceptor: attach access token from memory ──────────────
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const token = window.__accessToken;
+    const token = window.__accessToken || localStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

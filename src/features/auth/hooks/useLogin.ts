@@ -44,11 +44,9 @@ export function useLogin() {
   };
 }
 
+import { decodeJwt } from "@/shared/auth/decode-jwt";
+
 function parseTokenRole(token: string): UserRole | null {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
-    return payload.role as UserRole;
-  } catch {
-    return null;
-  }
+  const payload = decodeJwt(token);
+  return (payload?.role as UserRole) ?? "Owner";
 }

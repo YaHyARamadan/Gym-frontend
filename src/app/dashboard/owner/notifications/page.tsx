@@ -15,111 +15,108 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
+  Settings2,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  useNotifications,
+  useMarkAllNotificationsAsRead,
+  useMarkNotificationAsRead,
+  useUnreadNotificationsCount,
+} from "@/features/owner/hooks/useNotifications";
+import type { NotificationDto, NotificationType } from "@/features/owner/types";
 
-// Mock Notifications matching reference image 1
-const NOTIFICATIONS_DATA = [
-  {
-    id: 1,
-    title: "تم تجديد اشتراك",
-    sub: "تم تجديد اشتراك المشترك محمد علي في فرع مدينة نصر لمدة 3 أشهر.",
-    time: "منذ 5 دقائق",
-    fullTime: "21 مايو 2024 - 11:35 ص",
-    unread: true,
-    category: "subscriptions",
-    icon: CreditCard,
-    iconBg: "bg-emerald-100 text-emerald-600",
-  },
-  {
-    id: 2,
-    title: "دفعة جديدة",
-    sub: "تم استلام دفعة جديدة من أحمد خالد بمبلغ 1,200 ج.م.",
-    time: "منذ 25 دقيقة",
-    fullTime: "21 مايو 2024 - 11:15 ص",
-    unread: true,
-    category: "payments",
-    icon: DollarSign,
-    iconBg: "bg-sky-100 text-sky-600",
-  },
-  {
-    id: 3,
-    title: "اشتراك على وشك الانتهاء",
-    sub: "ينتهي اشتراك سارة عصام في فرع المعادي خلال 2 أيام.",
-    time: "منذ ساعة",
-    fullTime: "21 مايو 2024 - 10:40 ص",
-    unread: true,
-    category: "subscriptions",
-    icon: Clock,
-    iconBg: "bg-amber-100 text-amber-600",
-  },
-  {
-    id: 4,
-    title: "موظف جديد",
-    sub: "تم إضافة موظف جديد باسم نورهان سعيد في فرع أكتوبر.",
-    time: "منذ ساعتين",
-    fullTime: "21 مايو 2024 - 09:30 ص",
-    unread: false,
-    category: "system",
-    icon: UserPlus,
-    iconBg: "bg-purple-100 text-purple-600",
-  },
-  {
-    id: 5,
-    title: "تحديث نظام",
-    sub: "تم تحديث النظام إلى الإصدار 2.4.0 بنجاح.",
-    time: "منذ 3 ساعات",
-    fullTime: "21 مايو 2024 - 08:15 ص",
-    unread: false,
-    category: "system",
-    icon: Settings,
-    iconBg: "bg-zinc-200 text-zinc-700",
-  },
-  {
-    id: 6,
-    title: "تقرير يومي جاهز",
-    sub: "التقرير اليومي للمبيعات والمدفوعات متاح الآن.",
-    time: "منذ يوم",
-    fullTime: "20 مايو 2024 - 07:45 م",
-    unread: false,
-    category: "system",
-    icon: BarChart3,
-    iconBg: "bg-amber-100 text-amber-600",
-  },
-  {
-    id: 7,
-    title: "تم إلغاء اشتراك",
-    sub: "تم إلغاء اشتراك المشترك هند محمد في فرع التجمع.",
-    time: "منذ يومين",
-    fullTime: "19 مايو 2024 - 06:20 م",
-    unread: false,
-    category: "subscriptions",
-    icon: XCircle,
-    iconBg: "bg-rose-100 text-rose-600",
-  },
-];
+// Icon & color per type
+function notifIcon(type: NotificationType) {
+  switch (type) {
+    case "Subscription": return { Icon: CreditCard, bg: "bg-emerald-100 text-emerald-600" };
+    case "Payment":      return { Icon: DollarSign, bg: "bg-sky-100 text-sky-600" };
+    case "Member":       return { Icon: UserPlus, bg: "bg-purple-100 text-purple-600" };
+    case "Security":     return { Icon: Settings2, bg: "bg-amber-100 text-amber-600" };
+    case "System":
+    default:             return { Icon: BarChart3, bg: "bg-zinc-200 text-zinc-700" };
+  }
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `منذ ${mins} دقيقة`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `منذ ${hours} ساعة`;
+  const days = Math.floor(hours / 24);
+  return `منذ ${days} يوم`;
+}
 
 export default function NotificationsPage() {
   const [filterTab, setFilterTab] = useState<"all" | "unread" | "read">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [pageNumber, setPageNumber] = useState(1);
+  const pageSize = 10;
 
-  const filteredNotifs = NOTIFICATIONS_DATA.filter((n) => {
-    if (filterTab === "unread" && !n.unread) return false;
-    if (filterTab === "read" && n.unread) return false;
+  const { data, isLoading, error, refetch } = useNotifications({ pageNumber, pageSize });
+  const { data: unreadCount } = useUnreadNotificationsCount();
+  const markAllMutation = useMarkAllNotificationsAsRead();
+  const markOneMutation = useMarkNotificationAsRead();
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 dir-rtl font-tajawal">
+        <RefreshCw className="h-8 w-8 text-gym-yellow animate-spin" />
+        <p className="text-sm font-bold text-zinc-600 font-cairo">جاري تحميل الإشعارات...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 dir-rtl font-tajawal text-center p-6 bg-white rounded-3xl border border-zinc-200 shadow-xs max-w-lg mx-auto my-10">
+        <div className="h-12 w-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
+          <XCircle className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="text-base font-bold text-zinc-900 font-cairo">حدث خطأ أثناء تحميل الإشعارات</h3>
+          <p className="text-xs text-zinc-500 mt-1">{(error as Error)?.message || "تعذر الاتصال بالخادم."}</p>
+        </div>
+        <button
+          onClick={() => refetch()}
+          className="flex items-center gap-2 bg-gym-yellow hover:bg-amber-400 text-gym-black font-cairo font-bold text-xs px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span>إعادة المحاولة</span>
+        </button>
+      </div>
+    );
+  }
+
+  const allNotifs = data?.items ?? [];
+  const totalCount = data?.totalCount ?? 0;
+  const totalPages = data?.totalPages ?? 1;
+  const readCount = allNotifs.filter((n) => n.isRead).length;
+  const unreadPageCount = allNotifs.filter((n) => !n.isRead).length;
+
+  const filteredNotifs = allNotifs.filter((n: NotificationDto) => {
+    if (filterTab === "unread" && n.isRead) return false;
+    if (filterTab === "read" && !n.isRead) return false;
     if (searchQuery) {
-      return n.title.includes(searchQuery) || n.sub.includes(searchQuery);
+      const q = searchQuery.toLowerCase();
+      return n.title.toLowerCase().includes(q) || n.message.toLowerCase().includes(q);
     }
     return true;
   });
+
+  // Summary counts for sidebar
+  const countByType = (type: NotificationType) =>
+    allNotifs.filter((n) => n.type === type).length;
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto dir-rtl font-tajawal pb-10">
       {/* ── Top Header & Action Controls ── */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Controls: Filter Tabs, Mark all as read, Settings */}
+        {/* Controls */}
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          {/* Settings button */}
           <Link
             href="/dashboard/owner/settings"
             className="flex items-center gap-2 h-11 px-4 rounded-xl border border-zinc-200 bg-white text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer"
@@ -128,9 +125,15 @@ export default function NotificationsPage() {
             <span>إعدادات الإشعارات</span>
           </Link>
 
-          {/* Mark all as read */}
-          <button className="flex items-center gap-2 h-11 px-4 rounded-xl border border-zinc-200 bg-white text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer">
-            <CheckCheck className="h-4 w-4 text-zinc-500" />
+          <button
+            onClick={() => markAllMutation.mutate()}
+            disabled={markAllMutation.isPending}
+            className="flex items-center gap-2 h-11 px-4 rounded-xl border border-zinc-200 bg-white text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {markAllMutation.isPending
+              ? <RefreshCw className="h-4 w-4 animate-spin" />
+              : <CheckCheck className="h-4 w-4 text-zinc-500" />
+            }
             <span>تحديد الكل كمقروء</span>
           </button>
 
@@ -143,7 +146,7 @@ export default function NotificationsPage() {
                 filterTab === "read" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
               )}
             >
-              <span>16</span>
+              <span>{readCount}</span>
               <span>مقروءة</span>
             </button>
 
@@ -154,8 +157,11 @@ export default function NotificationsPage() {
                 filterTab === "unread" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
               )}
             >
-              <span className="h-2 w-2 rounded-full bg-red-500" />
-              <span className="text-red-600">8</span>
+              {(unreadCount ?? unreadPageCount) > 0 && (
+                <span className="h-4.5 w-4.5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center">
+                  {unreadCount ?? unreadPageCount}
+                </span>
+              )}
               <span>غير مقروءة</span>
             </button>
 
@@ -163,10 +169,10 @@ export default function NotificationsPage() {
               onClick={() => setFilterTab("all")}
               className={cn(
                 "px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5",
-                filterTab === "all" ? "bg-gym-yellow text-gym-black font-extrabold shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+                filterTab === "all" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
               )}
             >
-              <span>24</span>
+              <span>{totalCount}</span>
               <span>الكل</span>
             </button>
           </div>
@@ -180,190 +186,176 @@ export default function NotificationsPage() {
               <span>‹</span>
               <span>الرئيسية</span>
             </div>
-            <h1 className="text-2xl font-black text-zinc-900 font-cairo tracking-wide mt-0.5">
-              الإشعارات
-            </h1>
+            <h1 className="text-2xl font-black text-zinc-900 font-cairo tracking-wide mt-0.5">الإشعارات</h1>
           </div>
-          <div className="h-12 w-12 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700">
+          <div className="h-12 w-12 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 relative">
             <Bell className="h-6 w-6" strokeWidth={1.8} />
+            {(unreadCount ?? 0) > 0 && (
+              <span className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── Main Content Grid (Left Summary Sidebar + Right Feed List) ── */}
+      {/* ── Main 2-Column Layout ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* Right Section: Notifications Table List (9 cols) */}
-        <div className="lg:col-span-9 bg-white rounded-3xl border border-zinc-200 shadow-xs overflow-hidden">
-          
-          {/* Search Bar inside container */}
-          <div className="p-4 border-b border-zinc-100 bg-zinc-50/50">
-            <div className="relative w-full">
-              <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-              <input
-                type="text"
-                placeholder="ابحث في الإشعارات..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 pr-10 pl-4 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-gym-yellow focus:ring-2 focus:ring-gym-yellow/20"
-              />
-            </div>
+        {/* Left: Notification Feed (9 cols) */}
+        <div className="lg:col-span-9 space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="ابحث في الإشعارات..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-11 pr-10 pl-4 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-gym-yellow focus:ring-2 focus:ring-gym-yellow/20"
+            />
           </div>
 
-          {/* Notifications Table Header */}
-          <div className="hidden sm:grid grid-cols-12 gap-4 px-6 py-3 border-b border-zinc-100 bg-zinc-50 text-xs font-bold text-zinc-400 font-cairo text-right">
-            <div className="col-span-7">الإشعار</div>
-            <div className="col-span-3">الوقت</div>
-            <div className="col-span-2 text-center">الحالة</div>
-          </div>
+          {/* Notification Cards */}
+          <div className="bg-white rounded-2xl border border-zinc-200 shadow-xs divide-y divide-zinc-100 overflow-hidden">
+            {filteredNotifs.length === 0 ? (
+              <div className="py-16 text-center text-zinc-400 text-sm font-bold font-cairo">
+                لا يوجد إشعارات مطابقة
+              </div>
+            ) : (
+              filteredNotifs.map((n) => {
+                const { Icon, bg } = notifIcon(n.type);
+                return (
+                  <div
+                    key={n.id}
+                    onClick={() => !n.isRead && markOneMutation.mutate(n.id)}
+                    className={cn(
+                      "flex items-start gap-4 p-5 cursor-pointer transition-colors",
+                      !n.isRead ? "bg-amber-50/40 hover:bg-amber-50" : "hover:bg-zinc-50/80"
+                    )}
+                  >
+                    {/* Unread dot */}
+                    <div className="flex flex-col items-center gap-1 mt-1 shrink-0">
+                      {!n.isRead && <span className="h-2 w-2 rounded-full bg-red-500" />}
+                    </div>
 
-          {/* Notifications Feed Rows */}
-          <div className="divide-y divide-zinc-100">
-            {filteredNotifs.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.id}
-                  className={cn(
-                    "grid grid-cols-1 sm:grid-cols-12 gap-4 px-6 py-4 items-center transition-colors text-right",
-                    item.unread ? "bg-amber-50/20 hover:bg-amber-50/40" : "hover:bg-zinc-50/80"
-                  )}
-                >
-                  {/* Icon + Title + Sub text */}
-                  <div className="col-span-1 sm:col-span-7 flex items-start gap-3.5">
-                    <div className={cn("h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 mt-0.5", item.iconBg)}>
+                    {/* Icon */}
+                    <div className={cn("h-10 w-10 rounded-2xl flex items-center justify-center shrink-0", bg)}>
                       <Icon className="h-5 w-5" strokeWidth={1.8} />
                     </div>
 
-                    <div className="space-y-0.5 flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-zinc-900 font-cairo">{item.title}</h4>
-                        {item.unread && <span className="h-2 w-2 rounded-full bg-red-500 shrink-0 sm:hidden" />}
+                    {/* Content */}
+                    <div className="flex-1 text-right min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-zinc-400 font-mono whitespace-nowrap">
+                          {timeAgo(n.createdAt)}
+                        </span>
+                        <h4 className={cn("text-sm font-bold font-cairo", !n.isRead ? "text-zinc-900" : "text-zinc-700")}>
+                          {n.title}
+                        </h4>
                       </div>
-                      <p className="text-xs text-zinc-500 font-medium leading-relaxed">{item.sub}</p>
+                      <p className="text-xs text-zinc-500 mt-1 leading-relaxed line-clamp-2">{n.message}</p>
+                    </div>
+
+                    {/* Status badge */}
+                    <div className="shrink-0 mt-1">
+                      {!n.isRead ? (
+                        <span className="inline-block px-2.5 py-1 text-[10px] font-bold text-amber-800 bg-amber-200/60 rounded-md border border-amber-300">
+                          غير مقروءة
+                        </span>
+                      ) : (
+                        <span className="inline-block px-2.5 py-1 text-[10px] font-bold text-zinc-500 bg-zinc-100 rounded-md">
+                          مقروءة
+                        </span>
+                      )}
                     </div>
                   </div>
+                );
+              })
+            )}
+          </div>
 
-                  {/* Relative Time & Timestamp */}
-                  <div className="col-span-1 sm:col-span-3 text-xs space-y-0.5">
-                    <p className="font-bold text-zinc-700">{item.time}</p>
-                    <p className="text-[11px] text-zinc-400 font-mono">{item.fullTime}</p>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between text-xs font-medium text-zinc-500 pt-1">
+              <span>عرض {filteredNotifs.length} من {totalCount} إشعار</span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
+                  disabled={pageNumber === 1}
+                  className="h-8 w-8 rounded-lg border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 cursor-pointer disabled:opacity-40"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <span className="h-8 px-3 rounded-lg bg-gym-yellow text-gym-black font-black flex items-center">
+                  {pageNumber}
+                </span>
+                <button
+                  onClick={() => setPageNumber((p) => Math.min(totalPages, p + 1))}
+                  disabled={pageNumber === totalPages}
+                  className="h-8 w-8 rounded-lg border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 cursor-pointer disabled:opacity-40"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Summary Sidebar (3 cols) */}
+        <div className="lg:col-span-3 space-y-4">
+          <div className="bg-white rounded-2xl border border-zinc-200 p-5 shadow-xs space-y-4 text-right">
+            <h3 className="text-base font-extrabold text-zinc-900 font-cairo">ملخص الإشعارات</h3>
+            <div className="space-y-3">
+              {[
+                {
+                  label: "غير مقروءة",
+                  sub: "تحتاج إلى انتباهك",
+                  count: unreadCount ?? unreadPageCount,
+                  color: "text-red-500",
+                  dot: "bg-red-500",
+                },
+                {
+                  label: "اشتراكات",
+                  sub: "تجديدات واشتراكات",
+                  count: countByType("Subscription"),
+                  color: "text-emerald-600",
+                  dot: "bg-emerald-500",
+                },
+                {
+                  label: "مدفوعات",
+                  sub: "مدفوعات وإيصالات",
+                  count: countByType("Payment"),
+                  color: "text-sky-600",
+                  dot: "bg-sky-500",
+                },
+                {
+                  label: "النظام",
+                  sub: "تحديثات وتنبيهات",
+                  count: countByType("System"),
+                  color: "text-zinc-600",
+                  dot: "bg-zinc-400",
+                },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-xs font-bold text-zinc-700">{item.label}</p>
+                    <p className="text-[10px] text-zinc-400">{item.sub}</p>
                   </div>
-
-                  {/* Read / Unread Status Badge */}
-                  <div className="col-span-1 sm:col-span-2 flex justify-start sm:justify-center items-center">
-                    {item.unread ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                        <span className="h-1.5 w-1.5 rounded-full bg-rose-600" />
-                        غير مقروءة
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                        مقروءة
-                      </span>
-                    )}
+                  <div className="flex items-center gap-2">
+                    <p className={cn("text-xl font-black font-cairo", item.color)}>{item.count}</p>
+                    <span className={cn("h-2.5 w-2.5 rounded-full", item.dot)} />
                   </div>
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Pagination Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white text-xs font-medium text-zinc-500">
-            <div className="flex items-center gap-2">
-              <span>لكل صفحة</span>
-              <select className="h-8 px-2 rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 focus:outline-none">
-                <option>7</option>
-                <option>14</option>
-                <option>21</option>
-              </select>
-              <span>عرض 1 - 7 من 24 إشعار</span>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <button className="h-8 w-8 rounded-lg border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 cursor-pointer">
-                <ChevronRight className="h-4 w-4" />
-              </button>
-              <button className="h-8 px-3 rounded-lg border border-zinc-200 hover:bg-zinc-50 cursor-pointer">3</button>
-              <button className="h-8 px-3 rounded-lg border border-zinc-200 hover:bg-zinc-50 cursor-pointer">2</button>
-              <button className="h-8 px-3 rounded-lg bg-gym-yellow text-gym-black font-black shadow-xs cursor-pointer">1</button>
-              <button className="h-8 w-8 rounded-lg border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 cursor-pointer">
-                <ChevronLeft className="h-4 w-4" />
-              </button>
+              ))}
             </div>
           </div>
-        </div>
 
-        {/* Left Section: Notifications Summary Sidebar Widget (3 cols) */}
-        <div className="lg:col-span-3 bg-white rounded-3xl border border-zinc-200 p-6 shadow-xs space-y-6 text-right">
-          <h3 className="text-base font-extrabold text-zinc-900 font-cairo">ملخص الإشعارات</h3>
-
-          <div className="space-y-4">
-            {/* Category 1: Unread */}
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-rose-50/50 border border-rose-100">
-              <span className="text-2xl font-black text-rose-700 font-cairo">8</span>
-              <div className="text-right">
-                <p className="text-xs font-bold text-rose-900 font-cairo">غير مقروءة</p>
-                <p className="text-[10px] font-semibold text-rose-600">تحتاج إلى انتباهك</p>
-              </div>
-              <div className="h-9 w-9 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600">
-                <Bell className="h-4.5 w-4.5" />
-              </div>
-            </div>
-
-            {/* Category 2: Subscriptions */}
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-100">
-              <span className="text-2xl font-black text-zinc-900 font-cairo">6</span>
-              <div className="text-right">
-                <p className="text-xs font-bold text-zinc-800 font-cairo">اشتراكات</p>
-                <p className="text-[10px] font-semibold text-zinc-400">تجديدات واشتراكات</p>
-              </div>
-              <div className="h-9 w-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                <CreditCard className="h-4.5 w-4.5" />
-              </div>
-            </div>
-
-            {/* Category 3: Payments */}
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-100">
-              <span className="text-2xl font-black text-zinc-900 font-cairo">5</span>
-              <div className="text-right">
-                <p className="text-xs font-bold text-zinc-800 font-cairo">مدفوعات</p>
-                <p className="text-[10px] font-semibold text-zinc-400">مدفوعات وإيصالات</p>
-              </div>
-              <div className="h-9 w-9 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600">
-                <DollarSign className="h-4.5 w-4.5" />
-              </div>
-            </div>
-
-            {/* Category 4: System */}
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-100">
-              <span className="text-2xl font-black text-zinc-900 font-cairo">5</span>
-              <div className="text-right">
-                <p className="text-xs font-bold text-zinc-800 font-cairo">النظام</p>
-                <p className="text-[10px] font-semibold text-zinc-400">تحديثات وتنبيهات</p>
-              </div>
-              <div className="h-9 w-9 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600">
-                <Settings className="h-4.5 w-4.5" />
-              </div>
-            </div>
+          {/* Info Banner */}
+          <div className="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3 text-xs font-semibold text-amber-950 text-right">
+            <Info className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <span>يمكنك تخصيص الإشعارات التي ترغب في استقبالها من خلال إعدادات الإشعارات.</span>
           </div>
         </div>
-      </div>
-
-      {/* ── Bottom Notice Banner ── */}
-      <div className="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-amber-950">
-        <div className="flex items-center gap-3">
-          <Info className="h-5 w-5 text-amber-600 shrink-0" />
-          <span>يمكنك تخصيص الإشعارات التي ترغب في استقبالها من خلال إعدادات الإشعارات.</span>
-        </div>
-
-        <Link
-          href="/dashboard/owner/settings"
-          className="bg-gym-yellow hover:bg-amber-400 text-gym-black font-cairo font-black text-xs px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer shrink-0"
-        >
-          إعدادات الإشعارات
-        </Link>
       </div>
     </div>
   );

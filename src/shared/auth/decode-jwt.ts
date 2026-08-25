@@ -24,7 +24,22 @@ export function decodeJwt(token: string): JwtPayload | null {
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join("")
     );
-    return JSON.parse(jsonPayload) as JwtPayload;
+    const parsed = JSON.parse(jsonPayload) as Record<string, unknown>;
+
+    // Handle ASP.NET Core JWT Claim Types mapping
+    const sub = (parsed.sub || parsed["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]) as string;
+    const role = (parsed.role || parsed["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "Owner") as string;
+    const orgId = (parsed.orgId || parsed["OrganizationId"] || "") as string;
+    const branchId = (parsed.branchId || parsed["BranchId"]) as string | undefined;
+
+    return {
+      sub: sub || "user",
+      role: role || "Owner",
+      orgId: orgId || "",
+      branchId,
+      exp: (parsed.exp as number) || 0,
+      iat: (parsed.iat as number) || 0,
+    };
   } catch {
     return null;
   }
@@ -32,6 +47,6 @@ export function decodeJwt(token: string): JwtPayload | null {
 
 export function isTokenExpired(token: string): boolean {
   const payload = decodeJwt(token);
-  if (!payload) return true;
+  if (!payload || !payload.exp) return false;
   return Date.now() >= payload.exp * 1000;
 }

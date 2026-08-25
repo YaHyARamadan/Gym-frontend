@@ -47,21 +47,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback((accessToken: string) => {
     if (typeof window !== "undefined") {
       window.__accessToken = accessToken;
+      localStorage.setItem("accessToken", accessToken);
     }
     const payload = decodeJwt(accessToken);
     if (!payload) {
-      // In development fallback to default Owner user if JWT isn't populated
-      if (process.env.NODE_ENV === "development") {
-        setUser({
-          id: "dev-owner-id",
-          email: "owner@gym.com",
-          fullName: "أحمد محمد",
-          role: "Owner",
-          orgId: "org-1",
-        });
-      } else {
-        setUser(null);
-      }
+      setUser(null);
       return;
     }
     setUser({
@@ -82,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       if (typeof window !== "undefined") {
         window.__accessToken = undefined;
+        localStorage.removeItem("accessToken");
       }
       setUser(null);
       window.location.href = "/login";
@@ -89,18 +80,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   /**
-   * On mount: try to refresh using the HttpOnly refreshToken cookie.
-   * If refresh succeeds → we're authenticated.
-   * If refresh fails → not authenticated (cookie missing/expired).
+   * On mount: try to restore token from localStorage or refresh via HttpOnly cookie
    */
   useEffect(() => {
     let cancelled = false;
 
     const tryRestore = async () => {
-      // In development mode, stick to dev user without making network request
-      if (process.env.NODE_ENV === "development") {
-        setIsLoading(false);
-        return;
+      if (typeof window !== "undefined") {
+        const storedToken = localStorage.getItem("accessToken");
+        if (storedToken) {
+          window.__accessToken = storedToken;
+          login(storedToken);
+          setIsLoading(false);
+          return;
+        }
       }
 
       try {

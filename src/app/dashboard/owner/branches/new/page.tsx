@@ -15,14 +15,18 @@ import {
   FileText,
   Users,
   Hash,
+  RefreshCw,
+  XCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useCreateBranch } from "@/features/owner/hooks/useBranches";
 
 export default function AddNewBranchPage() {
   const router = useRouter();
+  const createBranchMutation = useCreateBranch();
+
   const [formData, setFormData] = useState({
     name: "",
-    manager: "",
+    managerUserId: "",
     phone: "",
     email: "",
     branchType: "",
@@ -35,10 +39,28 @@ export default function AddNewBranchPage() {
     notes: "",
   });
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate save and redirect back to branches list
-    router.push("/dashboard/owner/branches");
+    setErrorMessage(null);
+
+    createBranchMutation.mutate(
+      {
+        name: formData.name,
+        address: [formData.address, formData.city, formData.governorate].filter(Boolean).join(" - ") || undefined,
+        phone: formData.phone || undefined,
+        managerUserId: formData.managerUserId || undefined,
+      },
+      {
+        onSuccess: () => {
+          router.push("/dashboard/owner/branches");
+        },
+        onError: (err: any) => {
+          setErrorMessage(err?.response?.data?.message || err?.message || "حدث خطأ أثناء حفظ الفرع. يرجى المحاولة مرة أخرى.");
+        },
+      }
+    );
   };
 
   return (
@@ -72,6 +94,13 @@ export default function AddNewBranchPage() {
         </div>
       </div>
 
+      {errorMessage && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-xs font-bold text-red-700 flex items-center gap-3 text-right">
+          <XCircle className="h-5 w-5 text-red-600 shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
       {/* ── Main Form Card ── */}
       <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-zinc-200 p-6 sm:p-8 shadow-xs space-y-8">
         
@@ -102,20 +131,14 @@ export default function AddNewBranchPage() {
 
             {/* 2. مدير الفرع */}
             <div className="space-y-1.5 text-right">
-              <label className="text-xs font-bold text-zinc-700 font-cairo">
-                مدير الفرع <span className="text-red-500">*</span>
-              </label>
+              <label className="text-xs font-bold text-zinc-700 font-cairo">مدير الفرع</label>
               <div className="relative">
                 <select
-                  required
-                  value={formData.manager}
-                  onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
+                  value={formData.managerUserId}
+                  onChange={(e) => setFormData({ ...formData, managerUserId: e.target.value })}
                   className="w-full h-11 pr-4 pl-10 rounded-xl border border-zinc-200 bg-white text-xs font-medium text-zinc-700 focus:outline-none focus:border-gym-yellow focus:ring-2 focus:ring-gym-yellow/20 transition-all appearance-none cursor-pointer"
                 >
-                  <option value="">اختر مدير الفرع</option>
-                  <option value="محمد علي">محمد علي</option>
-                  <option value="أحمد خالد">أحمد خالد</option>
-                  <option value="سارة عصام">سارة عصام</option>
+                  <option value="">اختر مدير الفرع (اختياري)</option>
                 </select>
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
               </div>
@@ -123,13 +146,10 @@ export default function AddNewBranchPage() {
 
             {/* 3. رقم الهاتف */}
             <div className="space-y-1.5 text-right">
-              <label className="text-xs font-bold text-zinc-700 font-cairo">
-                رقم الهاتف <span className="text-red-500">*</span>
-              </label>
+              <label className="text-xs font-bold text-zinc-700 font-cairo">رقم الهاتف</label>
               <div className="relative">
                 <input
                   type="text"
-                  required
                   placeholder="0100 123 4567"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -156,12 +176,9 @@ export default function AddNewBranchPage() {
 
             {/* 5. نوع الفرع */}
             <div className="space-y-1.5 text-right">
-              <label className="text-xs font-bold text-zinc-700 font-cairo">
-                نوع الفرع <span className="text-red-500">*</span>
-              </label>
+              <label className="text-xs font-bold text-zinc-700 font-cairo">نوع الفرع</label>
               <div className="relative">
                 <select
-                  required
                   value={formData.branchType}
                   onChange={(e) => setFormData({ ...formData, branchType: e.target.value })}
                   className="w-full h-11 pr-4 pl-10 rounded-xl border border-zinc-200 bg-white text-xs font-medium text-zinc-700 focus:outline-none focus:border-gym-yellow focus:ring-2 focus:ring-gym-yellow/20 transition-all appearance-none cursor-pointer"
@@ -184,7 +201,7 @@ export default function AddNewBranchPage() {
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   className="w-full h-11 pr-4 pl-10 rounded-xl border border-zinc-200 bg-white text-xs font-medium text-zinc-700 focus:outline-none focus:border-gym-yellow focus:ring-2 focus:ring-gym-yellow/20 transition-all appearance-none cursor-pointer"
                 >
-                  <option value="active">اختر الحالة (نشط)</option>
+                  <option value="active">نشط</option>
                   <option value="inactive">غير نشط</option>
                 </select>
                 <CheckCircle2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
@@ -203,13 +220,10 @@ export default function AddNewBranchPage() {
 
           {/* العنوان التفصيلي */}
           <div className="space-y-1.5 text-right">
-            <label className="text-xs font-bold text-zinc-700 font-cairo">
-              العنوان <span className="text-red-500">*</span>
-            </label>
+            <label className="text-xs font-bold text-zinc-700 font-cairo">العنوان</label>
             <div className="relative">
               <input
                 type="text"
-                required
                 placeholder="أدخل عنوان الفرع بالتفصيل"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -222,12 +236,9 @@ export default function AddNewBranchPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* المحافظة */}
             <div className="space-y-1.5 text-right">
-              <label className="text-xs font-bold text-zinc-700 font-cairo">
-                المحافظة <span className="text-red-500">*</span>
-              </label>
+              <label className="text-xs font-bold text-zinc-700 font-cairo">المحافظة</label>
               <div className="relative">
                 <select
-                  required
                   value={formData.governorate}
                   onChange={(e) => setFormData({ ...formData, governorate: e.target.value })}
                   className="w-full h-11 pr-4 pl-10 rounded-xl border border-zinc-200 bg-white text-xs font-medium text-zinc-700 focus:outline-none focus:border-gym-yellow focus:ring-2 focus:ring-gym-yellow/20 transition-all appearance-none cursor-pointer"
@@ -244,12 +255,9 @@ export default function AddNewBranchPage() {
 
             {/* المدينة / المنطقة */}
             <div className="space-y-1.5 text-right">
-              <label className="text-xs font-bold text-zinc-700 font-cairo">
-                المدينة / المنطقة <span className="text-red-500">*</span>
-              </label>
+              <label className="text-xs font-bold text-zinc-700 font-cairo">المدينة / المنطقة</label>
               <div className="relative">
                 <select
-                  required
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   className="w-full h-11 pr-4 pl-10 rounded-xl border border-zinc-200 bg-white text-xs font-medium text-zinc-700 focus:outline-none focus:border-gym-yellow focus:ring-2 focus:ring-gym-yellow/20 transition-all appearance-none cursor-pointer"
@@ -326,9 +334,11 @@ export default function AddNewBranchPage() {
         <div className="flex items-center justify-start gap-4 pt-4 border-t border-zinc-100">
           <button
             type="submit"
-            className="bg-gym-yellow hover:bg-amber-400 text-gym-black font-cairo font-black text-sm px-8 py-3 rounded-xl shadow-[0_2px_12px_rgba(245,197,24,0.35)] transition-all cursor-pointer"
+            disabled={createBranchMutation.isPending}
+            className="flex items-center gap-2 bg-gym-yellow hover:bg-amber-400 text-gym-black font-cairo font-black text-sm px-8 py-3 rounded-xl shadow-[0_2px_12px_rgba(245,197,24,0.35)] transition-all cursor-pointer disabled:opacity-50"
           >
-            حفظ الفرع
+            {createBranchMutation.isPending && <RefreshCw className="h-4 w-4 animate-spin" />}
+            <span>حفظ الفرع</span>
           </button>
 
           <Link
