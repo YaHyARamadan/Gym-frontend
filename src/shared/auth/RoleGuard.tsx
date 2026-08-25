@@ -31,20 +31,25 @@ export default function RoleGuard({ allow, children }: RoleGuardProps) {
   useEffect(() => {
     if (isLoading) return;
     if (!user || !user.role) {
-      // لا تعمل redirect هنا — proxy.ts أصلاً بيحمي هذا المسار.
-      // لو وصلنا هنا أصلاً، يبقى فيه كوكي صالحة على الأقل، والحالة دي
-      // غالبًا مؤقتة أثناء استقرار حالة الـ Auth بعد تسجيل دخول جديد.
+      router.replace("/login");
       return;
     }
     if (!allow.includes(user.role)) {
       const targetHome = ROLE_HOME[user.role] || "/login";
-      router.replace(targetHome);
+      if (targetHome !== window.location.pathname) {
+        router.replace(targetHome);
+      }
     }
   }, [user, isLoading, allowKey, router]);
 
-  if (isLoading) return null;
-  if (!user || !user.role) return null; // يفضل يعرض null بهدوء، بدون أي navigation فعلي
-  if (!allow.includes(user.role)) return null;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-100 font-tajawal dir-rtl">
+        <div className="h-8 w-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm font-bold text-zinc-600 font-cairo mt-3">جاري فتح لوحة التحكم...</p>
+      </div>
+    );
+  }
 
   return <>{children}</>;
 }

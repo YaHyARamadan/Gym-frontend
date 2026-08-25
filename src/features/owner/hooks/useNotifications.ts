@@ -5,11 +5,14 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
 } from "../api/owner.api";
+import { useAuth } from "@/shared/auth/AuthContext";
 
 export function useNotifications(params?: { pageNumber?: number; pageSize?: number }) {
+  const { isAuthenticated, isLoading } = useAuth();
   return useQuery({
     queryKey: ["notifications", params],
     queryFn: () => getNotifications(params),
+    enabled: !isLoading && isAuthenticated,
   });
 }
 

@@ -60,7 +60,7 @@ export default function AddNewStaffPage() {
       {
         email: formData.email,
         role: formData.role,
-        branchId: formData.branchId || undefined,
+        branchId: formData.branchId.trim() ? formData.branchId : undefined,
       },
       {
         onSuccess: () => {

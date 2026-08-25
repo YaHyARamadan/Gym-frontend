@@ -6,6 +6,7 @@ import {
   resumeSubscription,
   cancelSubscription,
 } from "../api/owner.api";
+import { useAuth } from "@/shared/auth/AuthContext";
 
 export function useSubscriptions(params?: {
   branchId?: string;
@@ -14,9 +15,11 @@ export function useSubscriptions(params?: {
   pageNumber?: number;
   pageSize?: number;
 }) {
+  const { isAuthenticated, isLoading } = useAuth();
   return useQuery({
     queryKey: ["subscriptions", params],
     queryFn: () => getSubscriptions(params),
+    enabled: !isLoading && isAuthenticated,
   });
 }
 

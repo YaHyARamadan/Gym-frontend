@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getBranches, getBranchById, createBranch, updateBranch, deleteBranch } from "../api/owner.api";
 import type { CreateBranchPayload, UpdateBranchPayload } from "../types";
+import { useAuth } from "@/shared/auth/AuthContext";
 
 export function useBranches() {
+  const { isAuthenticated, isLoading } = useAuth();
   return useQuery({
     queryKey: ["branches"],
     queryFn: getBranches,
+    enabled: !isLoading && isAuthenticated,
   });
 }
 

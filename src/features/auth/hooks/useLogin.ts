@@ -28,8 +28,10 @@ export function useLogin() {
       setUser(result.accessToken);
       // Decode role for redirect (role is in the token)
       const payload = parseTokenRole(result.accessToken);
-      const destination = payload ? (ROLE_HOME[payload] ?? "/dashboard") : "/dashboard";
-      router.replace(destination);
+      const destination = payload ? (ROLE_HOME[payload] ?? "/dashboard/owner") : "/dashboard/owner";
+      if (typeof window !== "undefined") {
+        window.location.href = destination;
+      }
     },
     onError: () => {
       setServerError("البريد الإلكتروني أو كلمة المرور غير صحيحة");

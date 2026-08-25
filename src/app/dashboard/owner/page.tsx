@@ -52,10 +52,16 @@ export default function OwnerDashboardPage() {
   const { data: subsData, isLoading: subsLoading } = useSubscriptions({ pageSize: 5 });
   const { data: branchesData, isLoading: branchesLoading } = useBranches();
 
-  if (overviewLoading || revenueLoading || notifsLoading || subsLoading || branchesLoading) {
+  const isAnyLoading = (overviewLoading && overview === undefined) || 
+                      (revenueLoading && revenue === undefined) || 
+                      (notifsLoading && notificationsData === undefined) || 
+                      (subsLoading && subsData === undefined) || 
+                      (branchesLoading && branchesData === undefined);
+
+  if (isAnyLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 dir-rtl font-tajawal">
-        <RefreshCw className="h-8 w-8 text-gym-yellow animate-spin" />
+        <RefreshCw className="h-8 w-8 text-amber-500 animate-spin" />
         <p className="text-sm font-bold text-zinc-600 font-cairo">جاري تحميل إحصائيات لوحة التحكم...</p>
       </div>
     );
