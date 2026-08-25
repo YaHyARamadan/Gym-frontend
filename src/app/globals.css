@@ -72,6 +72,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+[dir="rtl"] {
+  direction: rtl;
+}
+
 /* Typography: headings use Cairo */
 h1, h2, h3, h4, h5, h6,
 .font-cairo {
@@ -129,9 +133,9 @@ h1, h2, h3, h4, h5, h6,
 .animate-card-enter:nth-child(4) { animation-delay: 150ms; }
 
 /* ─────────────────────────────────────────────────────────
-   Auth shell — dark "gym floor at night" backdrop shared by
-   login / signup / accept-invite. Replaces the old flat cream
-   page: layered grid, glow, plate-stack silhouettes, film grain.
+   Auth shell — Dark Gym Cyberpunk / Dark Luxury backdrop
+   shared by login / signup / accept-invite.
+   Deep dark slate (#09090b), glassmorphic card, glowing gold/crimson lighting.
    ───────────────────────────────────────────────────────── */
 .auth-shell {
   position: relative;
@@ -140,66 +144,66 @@ h1, h2, h3, h4, h5, h6,
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #0b0b0c;
+  background: #09090b;
   padding: 2.5rem 1rem;
   isolation: isolate;
 }
 
-/* Rubber-floor grid — faint hairlines receding to a horizon */
+/* Rubber-floor grid — faint golden-tinted hairlines */
 .auth-shell::before {
   content: "";
   position: absolute;
   inset: -10% -10%;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 40%, #000 0%, transparent 72%);
-          mask-image: radial-gradient(ellipse 75% 65% at 50% 40%, #000 0%, transparent 72%);
+    linear-gradient(rgba(245, 197, 24, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 197, 24, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 40%, #000 0%, transparent 75%);
+          mask-image: radial-gradient(ellipse 75% 65% at 50% 40%, #000 0%, transparent 75%);
   z-index: 0;
 }
 
-/* Film grain texture */
+/* Atmospheric noise texture */
 .auth-shell::after {
   content: "";
   position: absolute;
   inset: 0;
-  opacity: 0.5;
+  opacity: 0.4;
   z-index: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/></svg>");
   mix-blend-mode: overlay;
   pointer-events: none;
 }
 
-/* Glow orbs */
+/* Ambient glow orbs */
 .auth-glow {
   pointer-events: none;
   position: absolute;
   border-radius: 9999px;
-  filter: blur(80px);
+  filter: blur(90px);
   z-index: 0;
 }
 .auth-glow--yellow {
-  width: 34rem;
-  height: 34rem;
-  top: -10rem;
-  right: -8rem;
-  background: radial-gradient(circle, rgba(245, 197, 24, 0.28) 0%, transparent 70%);
+  width: 36rem;
+  height: 36rem;
+  top: -12rem;
+  right: -10rem;
+  background: radial-gradient(circle, rgba(245, 197, 24, 0.22) 0%, transparent 70%);
 }
 .auth-glow--maroon {
-  width: 28rem;
-  height: 28rem;
-  bottom: -10rem;
-  left: -8rem;
-  background: radial-gradient(circle, rgba(192, 57, 43, 0.22) 0%, transparent 70%);
+  width: 32rem;
+  height: 32rem;
+  bottom: -12rem;
+  left: -10rem;
+  background: radial-gradient(circle, rgba(192, 57, 43, 0.20) 0%, transparent 70%);
 }
 
-/* Oversized decorative plate-stack silhouette (right edge, RTL-friendly) */
+/* Oversized decorative plate-stack silhouette (right/left edges) */
 .auth-plates {
   pointer-events: none;
   position: absolute;
   z-index: 0;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 .auth-plates--left {
   top: 50%;
@@ -212,45 +216,43 @@ h1, h2, h3, h4, h5, h6,
   transform: translateY(-50%) scaleX(-1);
 }
 
-/* Diagonal hazard-stripe accent along the top edge */
+/* Top hazard/glow accent bar */
 .auth-shell .auth-topstripe {
   position: absolute;
   inset-inline: 0;
   top: 0;
-  height: 5px;
-  background: repeating-linear-gradient(
-    -45deg,
-    #f5c518 0 14px,
-    #0b0b0c 14px 28px
-  );
-  opacity: 0.85;
+  height: 4px;
+  background: linear-gradient(90deg, #09090b 0%, #f5c518 50%, #09090b 100%);
+  opacity: 0.9;
   z-index: 1;
 }
 
-/* Shared white auth card — sits above every background layer */
+/* Shared Auth Glassmorphic Slate Card */
 @keyframes auth-fade-up {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .auth-card {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 26rem;
-  background: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  max-width: 27rem;
+  background: rgba(18, 18, 22, 0.78);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(245, 197, 24, 0.18);
   border-radius: 1.75rem;
   box-shadow:
-    0 30px 80px -20px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(245, 197, 24, 0.08),
-    0 0 60px -10px rgba(245, 197, 24, 0.15);
+    0 30px 90px -20px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+    0 0 50px -10px rgba(245, 197, 24, 0.12);
   padding: 2.25rem 1.75rem;
-  animation: auth-fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: auth-fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @media (min-width: 480px) {
-  .auth-card { padding: 2.75rem; }
+  .auth-card { padding: 2.5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Mail, User, Building2, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, Mail, User, Building2, AlertTriangle, ArrowLeft, Lock } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { signupSchema, type SignupFormValues } from "../schemas";
@@ -35,17 +35,17 @@ export function SignupForm() {
   };
 
   return (
-    <div className="w-full max-w-[400px] mx-auto">
+    <div className="w-full max-w-[440px] mx-auto">
       {/* Brand header */}
-      <div className="flex flex-col items-center mb-7">
-        <BrandMark tone="dark" />
+      <div className="flex flex-col items-center mb-6">
+        <BrandMark tone="dark" size="lg" />
       </div>
 
       {/* Card */}
       <div className="auth-card">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gym-black font-cairo">إنشاء حساب جديد</h1>
-          <p className="text-sm text-gym-text-secondary mt-1.5">لمالكي الصالات الرياضية فقط</p>
+          <h1 className="text-2xl font-extrabold text-white font-cairo tracking-wide">إنشاء حساب جديد</h1>
+          <p className="text-sm text-zinc-400 mt-1.5 font-medium">خاص بمالكي ومديري الصالات الرياضية</p>
         </div>
 
         {serverError && (
@@ -53,17 +53,17 @@ export function SignupForm() {
             role="alert"
             className={cn(
               "mb-5 rounded-xl px-4 py-3",
-              "bg-gym-red-tint border border-gym-red/20",
-              "text-sm text-gym-red font-medium",
-              "flex items-center gap-2"
+              "bg-gym-red/15 border border-gym-red/40",
+              "text-sm text-red-300 font-medium",
+              "flex items-center gap-2.5"
             )}
           >
-            <AlertTriangle className="h-4 w-4 shrink-0" strokeWidth={2} />
-            {serverError}
+            <AlertTriangle className="h-4 w-4 shrink-0 text-gym-red" strokeWidth={2} />
+            <span>{serverError}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           <Input
             {...register("fullName")}
             id="signup-fullname"
@@ -73,7 +73,7 @@ export function SignupForm() {
             autoComplete="name"
             autoFocus
             error={errors.fullName?.message}
-            rightIcon={<User className="h-4 w-4" />}
+            rightIcon={<User className="h-4 w-4 text-zinc-400" />}
           />
 
           <Input
@@ -84,7 +84,7 @@ export function SignupForm() {
             placeholder="صالة النخبة الرياضية"
             autoComplete="organization"
             error={errors.organizationName?.message}
-            rightIcon={<Building2 className="h-4 w-4" />}
+            rightIcon={<Building2 className="h-4 w-4 text-zinc-400" />}
           />
 
           <Input
@@ -95,7 +95,7 @@ export function SignupForm() {
             placeholder="example@email.com"
             autoComplete="email"
             error={errors.email?.message}
-            rightIcon={<Mail className="h-4 w-4" />}
+            rightIcon={<Mail className="h-4 w-4 text-zinc-400" />}
             dir="ltr"
           />
 
@@ -108,12 +108,13 @@ export function SignupForm() {
               placeholder="••••••••"
               autoComplete="new-password"
               error={errors.password?.message}
-              rightIcon={
+              rightIcon={<Lock className="h-4 w-4 text-zinc-400" />}
+              leftIcon={
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? "إخفاء" : "إظهار"}
-                  className="pointer-events-auto text-gym-text-secondary hover:text-gym-black transition-colors"
+                  className="pointer-events-auto text-zinc-400 hover:text-gym-yellow transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -130,12 +131,13 @@ export function SignupForm() {
             placeholder="••••••••"
             autoComplete="new-password"
             error={errors.confirmPassword?.message}
-            rightIcon={
+            rightIcon={<Lock className="h-4 w-4 text-zinc-400" />}
+            leftIcon={
               <button
                 type="button"
                 onClick={() => setShowConfirm((v) => !v)}
                 aria-label={showConfirm ? "إخفاء" : "إظهار"}
-                className="pointer-events-auto text-gym-text-secondary hover:text-gym-black transition-colors"
+                className="pointer-events-auto text-zinc-400 hover:text-gym-yellow transition-colors"
               >
                 {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -148,18 +150,25 @@ export function SignupForm() {
             variant="primary"
             size="lg"
             isLoading={isPending}
-            className="w-full mt-2"
+            className="w-full mt-3 group font-cairo font-bold tracking-wide text-base shadow-[0_0_20px_rgba(245,197,24,0.3)] hover:shadow-[0_0_30px_rgba(245,197,24,0.5)] transition-all duration-300"
           >
-            {isPending ? "جارٍ إنشاء الحساب…" : "إنشاء الحساب"}
+            {isPending ? (
+              "جارٍ إنشاء الحساب…"
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                إنشاء الحساب
+                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              </span>
+            )}
           </Button>
         </form>
 
-        <div className="mt-5 pt-5 border-t border-gym-border text-center">
-          <p className="text-sm text-gym-text-secondary">
+        <div className="mt-5 pt-5 border-t border-white/10 text-center">
+          <p className="text-sm text-zinc-400">
             لديك حساب بالفعل؟{" "}
             <Link
               href="/login"
-              className="font-semibold text-gym-black hover:underline underline-offset-2"
+              className="font-semibold text-gym-yellow hover:text-amber-300 hover:underline underline-offset-4"
             >
               تسجيل الدخول
             </Link>

@@ -73,7 +73,9 @@ apiClient.interceptors.response.use(
         processQueue(refreshError, null);
         if (typeof window !== "undefined") {
           window.__accessToken = undefined;
-          window.location.href = "/login";
+          if (process.env.NODE_ENV !== "development") {
+            window.location.href = "/login";
+          }
         }
         return Promise.reject(refreshError);
       } finally {

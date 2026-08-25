@@ -26,19 +26,22 @@ export default function RoleGuard({ allow, children }: RoleGuardProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
+  const allowKey = allow.join(",");
+
   useEffect(() => {
     if (isLoading) return;
-    if (!user) {
+    if (!user || !user.role) {
       router.replace("/login");
       return;
     }
     if (!allow.includes(user.role)) {
-      router.replace(ROLE_HOME[user.role]);
+      const targetHome = ROLE_HOME[user.role] || "/login";
+      router.replace(targetHome);
     }
-  }, [user, isLoading, allow, router]);
+  }, [user, isLoading, allowKey, router]);
 
   if (isLoading) return null;
-  if (!user || !allow.includes(user.role)) return null;
+  if (!user || !user.role || !allow.includes(user.role)) return null;
 
   return <>{children}</>;
 }

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, User, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, User, CheckCircle2, AlertTriangle, ArrowLeft, Lock } from "lucide-react";
 import { useState } from "react";
 import { acceptInviteSchema, type AcceptInviteFormValues } from "../schemas";
 import { useAcceptInvite } from "../hooks/useAcceptInvite";
@@ -35,10 +35,12 @@ export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
 
   if (isSuccess) {
     return (
-      <div className="flex flex-col items-center gap-3 py-8 text-center">
-        <CheckCircle2 className="h-12 w-12 text-gym-yellow" strokeWidth={1.5} />
-        <p className="text-lg font-bold text-gym-black font-cairo">تم تفعيل الحساب!</p>
-        <p className="text-sm text-gym-text-secondary">جارٍ تحويلك…</p>
+      <div className="flex flex-col items-center gap-3 py-8 text-center animate-fadeIn">
+        <div className="h-16 w-16 rounded-full bg-gym-yellow/20 border border-gym-yellow/40 flex items-center justify-center shadow-[0_0_30px_rgba(245,197,24,0.3)]">
+          <CheckCircle2 className="h-10 w-10 text-gym-yellow" strokeWidth={1.75} />
+        </div>
+        <p className="text-xl font-extrabold text-white font-cairo mt-2">تم تفعيل الحساب بنجاح!</p>
+        <p className="text-sm text-zinc-400">جارٍ تحويلك إلى لوحة التحكم…</p>
       </div>
     );
   }
@@ -50,16 +52,16 @@ export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
           role="alert"
           className={cn(
             "rounded-xl px-4 py-3",
-            "bg-gym-red-tint border border-gym-red/20",
-            "text-sm text-gym-red font-medium flex items-center gap-2"
+            "bg-gym-red/15 border border-gym-red/40",
+            "text-sm text-red-300 font-medium flex items-center gap-2.5"
           )}
         >
-          <AlertTriangle className="h-4 w-4 shrink-0" strokeWidth={2} />
-          {serverError}
+          <AlertTriangle className="h-4 w-4 shrink-0 text-gym-red" strokeWidth={2} />
+          <span>{serverError}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Input
           {...register("fullName")}
           id="invite-fullname"
@@ -70,7 +72,7 @@ export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
           autoFocus
           required
           error={errors.fullName?.message}
-          rightIcon={<User className="h-4 w-4" />}
+          rightIcon={<User className="h-4 w-4 text-zinc-400" />}
         />
 
         <div className="space-y-2">
@@ -83,12 +85,13 @@ export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
             autoComplete="new-password"
             required
             error={errors.password?.message}
-            rightIcon={
+            rightIcon={<Lock className="h-4 w-4 text-zinc-400" />}
+            leftIcon={
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "إخفاء" : "إظهار"}
-                className="pointer-events-auto text-gym-text-secondary hover:text-gym-black transition-colors"
+                className="pointer-events-auto text-zinc-400 hover:text-gym-yellow transition-colors"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -106,12 +109,13 @@ export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
           autoComplete="new-password"
           required
           error={errors.confirmPassword?.message}
-          rightIcon={
+          rightIcon={<Lock className="h-4 w-4 text-zinc-400" />}
+          leftIcon={
             <button
               type="button"
               onClick={() => setShowConfirm((v) => !v)}
               aria-label={showConfirm ? "إخفاء" : "إظهار"}
-              className="pointer-events-auto text-gym-text-secondary hover:text-gym-black transition-colors"
+              className="pointer-events-auto text-zinc-400 hover:text-gym-yellow transition-colors"
             >
               {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -124,9 +128,16 @@ export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
           variant="primary"
           size="lg"
           isLoading={isPending}
-          className="w-full mt-2"
+          className="w-full mt-3 group font-cairo font-bold tracking-wide text-base shadow-[0_0_20px_rgba(245,197,24,0.3)] hover:shadow-[0_0_30px_rgba(245,197,24,0.5)] transition-all duration-300"
         >
-          {isPending ? "جارٍ تفعيل الحساب…" : "تفعيل الحساب والدخول"}
+          {isPending ? (
+            "جارٍ تفعيل الحساب…"
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              تفعيل الحساب والدخول
+              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            </span>
+          )}
         </Button>
       </form>
     </div>

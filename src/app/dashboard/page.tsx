@@ -6,7 +6,5 @@ import { redirect } from "next/navigation";
  * This page exists to satisfy the middleware matcher.
  */
 export default function DashboardRootPage() {
-  // Will be redirected by middleware if not authenticated
-  // Client-side RoleGuard handles further role-based routing
-  redirect("/login");
+  redirect("/dashboard/owner");
 }

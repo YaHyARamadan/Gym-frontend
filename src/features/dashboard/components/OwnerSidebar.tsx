@@ -4,10 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutGrid,
-  Users,
   Building2,
-  Wallet,
-  UserPlus,
+  Users,
+  CreditCard,
+  Banknote,
+  Briefcase,
+  BarChart3,
+  Bell,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -16,11 +19,14 @@ import { useAuth } from "@/shared/auth/AuthContext";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/dashboard/owner", label: "نظرة عامة", icon: LayoutGrid },
+  { href: "/dashboard/owner", label: "الرئيسية", icon: LayoutGrid },
   { href: "/dashboard/owner/branches", label: "الفروع", icon: Building2 },
-  { href: "/dashboard/owner/members", label: "الأعضاء", icon: Users },
-  { href: "/dashboard/owner/team", label: "الفريق والدعوات", icon: UserPlus },
-  { href: "/dashboard/owner/billing", label: "الاشتراكات والمالية", icon: Wallet },
+  { href: "/dashboard/owner/members", label: "المشتركين", icon: Users },
+  { href: "/dashboard/owner/subscriptions", label: "الإشتراكات", icon: CreditCard },
+  { href: "/dashboard/owner/payments", label: "المدفوعات", icon: Banknote },
+  { href: "/dashboard/owner/staff", label: "الموظفين", icon: Briefcase },
+  { href: "/dashboard/owner/reports", label: "التقارير", icon: BarChart3 },
+  { href: "/dashboard/owner/notifications", label: "الإشعارات", icon: Bell },
   { href: "/dashboard/owner/settings", label: "الإعدادات", icon: Settings },
 ];
 
@@ -29,40 +35,45 @@ export function OwnerSidebar() {
   const { logout } = useAuth();
 
   return (
-    <aside className="dash-sidebar hidden lg:flex lg:flex-col w-64 shrink-0 h-full">
-      <div className="relative z-10 flex flex-col h-full px-5 py-6">
-        <div className="flex items-center justify-center pb-6 mb-6 border-b border-white/10">
-          <BrandMark tone="dark" size="sm" />
+    <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 h-screen sticky top-0 bg-[#0d0d0d] text-white border-l border-white/10 select-none z-30">
+      <div className="flex flex-col h-full py-6 px-4">
+        {/* Brand header */}
+        <div className="flex items-center justify-center pb-6 mb-4 border-b border-white/10">
+          <BrandMark tone="dark" size="md" />
         </div>
 
-        <nav className="flex-1 flex flex-col gap-1">
+        {/* Navigation items */}
+        <nav className="flex-1 space-y-1.5 overflow-y-auto pr-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href;
+            const active = pathname === href || (href !== "/dashboard/owner" && pathname.startsWith(href));
             return (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
+                  "flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200",
                   active
-                    ? "bg-gym-yellow text-gym-black font-bold"
-                    : "text-white/60 hover:bg-white/5 hover:text-white"
+                    ? "bg-gym-yellow text-gym-black font-extrabold shadow-[0_2px_12px_rgba(245,197,24,0.35)]"
+                    : "text-zinc-300 hover:bg-white/8 hover:text-white"
                 )}
               >
-                <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.4 : 1.8} />
-                {label}
+                <Icon className={cn("h-5 w-5 shrink-0", active ? "text-gym-black stroke-[2.5]" : "text-zinc-400 stroke-[1.8]")} />
+                <span className="font-cairo text-sm">{label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <button
-          onClick={() => logout()}
-          className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-white/50 hover:bg-white/5 hover:text-gym-red transition-colors mt-2"
-        >
-          <LogOut className="h-4.5 w-4.5" strokeWidth={1.8} />
-          تسجيل الخروج
-        </button>
+        {/* Logout button */}
+        <div className="pt-4 border-t border-white/10">
+          <button
+            onClick={() => logout()}
+            className="w-full flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-zinc-400 hover:bg-white/8 hover:text-red-400 transition-colors group"
+          >
+            <span className="font-cairo text-sm font-bold">تسجيل الخروج</span>
+            <LogOut className="h-5 w-5 shrink-0 transition-transform group-hover:-translate-x-1" strokeWidth={1.8} />
+          </button>
+        </div>
       </div>
     </aside>
   );

@@ -23,7 +23,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-sm font-medium text-gym-black select-none"
+            className="text-sm font-medium text-zinc-200 select-none"
           >
             {label}
             {props.required && (
@@ -53,21 +53,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             }
             className={cn(
               // Base
-              "w-full h-11 rounded-xl border bg-gym-surface px-4 py-2.5",
-              "text-sm text-gym-black placeholder:text-gym-text-secondary",
+              "w-full h-11 rounded-xl border bg-black/40 px-4 py-2.5",
+              "text-sm text-white placeholder:text-zinc-400",
               "transition-all duration-200",
               // RTL padding adjustments
               rightIcon && "pr-10",
               leftIcon && "pl-10",
               // Border states
-              "border-gym-border",
-              "hover:border-gym-black/30",
-              "focus:outline-none focus:border-gym-black focus:ring-2 focus:ring-gym-black/10",
+              "border-white/10",
+              "hover:border-gym-yellow/40",
+              "focus:outline-none focus:border-gym-yellow focus:ring-2 focus:ring-gym-yellow/20 focus:bg-black/60",
               // Error state
               error && [
-                "border-gym-red/50",
-                "focus:border-gym-red focus:ring-gym-red/10",
-                "bg-gym-red-tint/30",
+                "border-gym-red/60",
+                "focus:border-gym-red focus:ring-gym-red/20",
+                "bg-gym-red/10",
               ],
               className
             )}

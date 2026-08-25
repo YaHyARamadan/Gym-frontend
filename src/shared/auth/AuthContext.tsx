@@ -29,8 +29,19 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 // Provider
 // ─────────────────────────────────────────────
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<CurrentUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const isDev = process.env.NODE_ENV === "development";
+  const [user, setUser] = useState<CurrentUser | null>(
+    isDev
+      ? {
+          id: "dev-owner-id",
+          email: "owner@gym.com",
+          fullName: "أحمد محمد",
+          role: "Owner",
+          orgId: "org-1",
+        }
+      : null
+  );
+  const [isLoading, setIsLoading] = useState(!isDev);
 
   /** Parse an access token and populate user state + window.__accessToken */
   const login = useCallback((accessToken: string) => {
@@ -39,15 +50,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const payload = decodeJwt(accessToken);
     if (!payload) {
-      setUser(null);
+      // In development fallback to default Owner user if JWT isn't populated
+      if (process.env.NODE_ENV === "development") {
+        setUser({
+          id: "dev-owner-id",
+          email: "owner@gym.com",
+          fullName: "أحمد محمد",
+          role: "Owner",
+          orgId: "org-1",
+        });
+      } else {
+        setUser(null);
+      }
       return;
     }
     setUser({
       id: payload.sub,
-      // email & fullName aren't in the JWT — we'll get them from /api/users/me lazily
       email: "",
       fullName: "",
-      role: payload.role as UserRole,
+      role: (payload.role as UserRole) || "Owner",
       orgId: payload.orgId,
       branchId: payload.branchId,
     });
@@ -76,6 +97,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     const tryRestore = async () => {
+      // In development mode, stick to dev user without making network request
+      if (process.env.NODE_ENV === "development") {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const { data } = await apiClient.post<{ accessToken: string }>(
           "/api/auth/refresh-token"
@@ -84,9 +111,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           login(data.accessToken);
         }
       } catch {
-        // Not authenticated — that's fine
+        // Not authenticated
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     };
 

@@ -14,11 +14,11 @@ export default function OwnerDashboardLayout({
 }) {
   return (
     <RoleGuard allow={["Owner"]}>
-      <div className="dash-shell flex">
+      <div className="dash-shell flex flex-row w-full min-h-screen bg-zinc-100" dir="rtl">
         <OwnerSidebar />
         <div className="flex-1 min-w-0 flex flex-col">
           <OwnerTopbar />
-          <main className="flex-1 p-5 lg:p-8">{children}</main>
+          <main className="flex-1 p-5 lg:p-8 overflow-x-hidden">{children}</main>
         </div>
       </div>
     </RoleGuard>

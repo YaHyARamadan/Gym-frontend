@@ -39,7 +39,7 @@ export default function RootLayout({
       className={`${cairo.variable} ${tajawal.variable} h-full`}
       suppressHydrationWarning
     >
-      <body className="min-h-full antialiased bg-gym-bg text-gym-black">
+      <body className="min-h-full antialiased bg-gym-bg text-gym-black" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

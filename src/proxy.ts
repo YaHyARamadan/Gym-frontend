@@ -10,8 +10,8 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only guard dashboard routes
-  if (pathname.startsWith("/dashboard")) {
+  // Only guard dashboard routes (bypassed in development mode)
+  if (pathname.startsWith("/dashboard") && process.env.NODE_ENV !== "development") {
     const refreshToken = request.cookies.get("refreshToken");
 
     if (!refreshToken) {
@@ -29,8 +29,7 @@ export function proxy(request: NextRequest) {
   ) {
     const refreshToken = request.cookies.get("refreshToken");
     if (refreshToken) {
-      // Let client-side AuthContext handle role-based redirect
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/dashboard/owner", request.url));
     }
   }
 
