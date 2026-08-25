@@ -4,6 +4,8 @@
  */
 export interface JwtPayload {
   sub: string;       // userId
+  fullName?: string;
+  email?: string;
   role: string;      // UserRole enum value
   orgId: string;
   branchId?: string;
@@ -28,13 +30,36 @@ export function decodeJwt(token: string): JwtPayload | null {
 
     // Handle ASP.NET Core JWT Claim Types mapping
     const sub = (parsed.sub || parsed["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]) as string;
-    const role = (parsed.role || parsed["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "Owner") as string;
+    const fullName = (
+      parsed.fullName ||
+      parsed.name ||
+      parsed["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
+      parsed["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"]
+    ) as string | undefined;
+    const email = (
+      parsed.email ||
+      parsed["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"]
+    ) as string | undefined;
+    const rawRole = (parsed.role || parsed["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "Owner") as string;
     const orgId = (parsed.orgId || parsed["OrganizationId"] || "") as string;
     const branchId = (parsed.branchId || parsed["BranchId"]) as string | undefined;
 
+    // Normalize role string (Case-insensitive matching to UserRole)
+    let role = "Owner";
+    if (typeof rawRole === "string") {
+      const lower = rawRole.toLowerCase();
+      if (lower.includes("owner")) role = "Owner";
+      else if (lower.includes("branchmanager") || lower.includes("manager")) role = "BranchManager";
+      else if (lower.includes("reception")) role = "Reception";
+      else if (lower.includes("coach")) role = "Coach";
+      else if (lower.includes("user")) role = "User";
+    }
+
     return {
       sub: sub || "user",
-      role: role || "Owner",
+      fullName,
+      email,
+      role,
       orgId: orgId || "",
       branchId,
       exp: (parsed.exp as number) || 0,

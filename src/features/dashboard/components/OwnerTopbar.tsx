@@ -5,17 +5,25 @@ import { useAuth } from "@/shared/auth/AuthContext";
 
 export function OwnerTopbar() {
   const { user } = useAuth();
-  const userName = user?.fullName || "أحمد محمد";
-  const userRole = "المالك";
+  const userName = user?.fullName || "المستخدم";
+  const userRole = user?.role === "Owner" ? "المالك" : user?.role || "مستخدم";
+
+  // Real-time formatted date in Arabic
+  const currentDateFormatted = new Intl.DateTimeFormat("ar-EG", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
 
   return (
     <header className="flex flex-row-reverse items-center justify-between gap-4 px-6 lg:px-8 py-4 bg-white border-b border-zinc-200 sticky top-0 z-20 shadow-xs">
-      {/* Right side in Design: User Profile, Bell, Date */}
+      {/* Right side: User Profile, Bell, Date */}
       <div className="flex items-center gap-4">
         {/* User Profile dropdown button */}
         <div className="flex items-center gap-2.5 cursor-pointer group">
           <div className="h-10 w-10 rounded-full bg-zinc-900 text-white font-cairo font-bold flex items-center justify-center text-sm shadow-xs overflow-hidden">
-            {userName.charAt(0)}
+            {userName.charAt(0) || "أ"}
           </div>
           <div className="hidden sm:flex flex-col text-right">
             <span className="text-sm font-bold text-zinc-900 font-cairo leading-tight">{userName}</span>
@@ -33,14 +41,14 @@ export function OwnerTopbar() {
           <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
         </button>
 
-        {/* Date picker indicator */}
+        {/* Dynamic Current Date */}
         <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs font-medium text-zinc-600">
           <Calendar className="h-4 w-4 text-zinc-500" strokeWidth={1.8} />
-          <span>الثلاثاء، 21 مايو 2024</span>
+          <span>{currentDateFormatted}</span>
         </div>
       </div>
 
-      {/* Left side in Design: Welcome greeting */}
+      {/* Left side: Welcome greeting with active user name */}
       <div className="text-right">
         <h1 className="text-xl font-black text-zinc-900 font-cairo tracking-wide">
           مرحبًا بك، {userName}

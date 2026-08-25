@@ -45,8 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setUser({
       id: payload.sub,
-      email: "",
-      fullName: "",
+      email: payload.email || "",
+      fullName: payload.fullName || "",
       role: (payload.role as UserRole) || "Owner",
       orgId: payload.orgId,
       branchId: payload.branchId,

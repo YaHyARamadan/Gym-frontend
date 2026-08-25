@@ -36,6 +36,7 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
+      data-scroll-behavior="smooth"
       className={`${cairo.variable} ${tajawal.variable} h-full`}
       suppressHydrationWarning
     >

@@ -25,7 +25,7 @@ export async function signupOwner(
     email: data.email,
     password: data.password,
     fullName: data.fullName,
-    organizationName: data.organizationName,
+    orgName: data.organizationName,
   });
   return res.data;
 }

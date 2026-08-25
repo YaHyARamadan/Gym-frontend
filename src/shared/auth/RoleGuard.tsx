@@ -31,7 +31,9 @@ export default function RoleGuard({ allow, children }: RoleGuardProps) {
   useEffect(() => {
     if (isLoading) return;
     if (!user || !user.role) {
-      router.replace("/login");
+      // لا تعمل redirect هنا — proxy.ts أصلاً بيحمي هذا المسار.
+      // لو وصلنا هنا أصلاً، يبقى فيه كوكي صالحة على الأقل، والحالة دي
+      // غالبًا مؤقتة أثناء استقرار حالة الـ Auth بعد تسجيل دخول جديد.
       return;
     }
     if (!allow.includes(user.role)) {
@@ -41,7 +43,8 @@ export default function RoleGuard({ allow, children }: RoleGuardProps) {
   }, [user, isLoading, allowKey, router]);
 
   if (isLoading) return null;
-  if (!user || !user.role || !allow.includes(user.role)) return null;
+  if (!user || !user.role) return null; // يفضل يعرض null بهدوء، بدون أي navigation فعلي
+  if (!allow.includes(user.role)) return null;
 
   return <>{children}</>;
 }
