@@ -29,19 +29,8 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 // Provider
 // ─────────────────────────────────────────────
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const isDev = process.env.NODE_ENV === "development";
-  const [user, setUser] = useState<CurrentUser | null>(
-    isDev
-      ? {
-          id: "dev-owner-id",
-          email: "owner@gym.com",
-          fullName: "أحمد محمد",
-          role: "Owner",
-          orgId: "org-1",
-        }
-      : null
-  );
-  const [isLoading, setIsLoading] = useState(!isDev);
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   /** Parse an access token and populate user state + window.__accessToken */
   const login = useCallback((accessToken: string) => {

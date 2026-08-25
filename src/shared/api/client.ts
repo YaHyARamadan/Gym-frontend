@@ -42,7 +42,10 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // لا تحاول تعمل refresh لو الطلب الفاشل هو نفسه طلب الـ refresh
+    const isRefreshEndpoint = originalRequest?.url?.includes("/api/auth/refresh-token");
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
