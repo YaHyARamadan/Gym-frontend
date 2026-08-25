@@ -13,6 +13,7 @@ import {
   MoreVertical,
   IdCard,
 } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 // Mock Staff Data matching reference screenshot 1
@@ -176,10 +177,13 @@ export default function StaffPage() {
         <>
           {/* Top CTA Add Employee Bar */}
           <div className="flex justify-start">
-            <button className="flex items-center justify-center gap-2 bg-gym-yellow hover:bg-amber-400 text-gym-black font-cairo font-black text-sm px-6 py-3 rounded-xl shadow-[0_2px_12px_rgba(245,197,24,0.35)] transition-all cursor-pointer">
+            <Link
+              href="/dashboard/owner/staff/new"
+              className="flex items-center justify-center gap-2 bg-gym-yellow hover:bg-amber-400 text-gym-black font-cairo font-black text-sm px-6 py-3 rounded-xl shadow-[0_2px_12px_rgba(245,197,24,0.35)] transition-all cursor-pointer"
+            >
               <Plus className="h-4.5 w-4.5 stroke-[2.5]" />
               <span>إضافة موظف جديد</span>
-            </button>
+            </Link>
           </div>
 
           {/* ── 4 Metric Cards (Right to Left) ── */}
