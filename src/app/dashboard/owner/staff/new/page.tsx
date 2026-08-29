@@ -22,13 +22,14 @@ import {
   RefreshCw,
   XCircle,
 } from "lucide-react";
-import { useInviteStaff } from "@/features/owner/hooks/useStaff";
+import { useCreateDirectStaff } from "@/features/owner/hooks/useStaff";
 import { useBranches } from "@/features/owner/hooks/useBranches";
 import type { UserRole } from "@/features/owner/types";
+import { extractApiError } from "@/lib/utils";
 
 export default function AddNewStaffPage() {
   const router = useRouter();
-  const inviteStaffMutation = useInviteStaff();
+  const createStaffMutation = useCreateDirectStaff();
   const { data: branches } = useBranches();
 
   const [formData, setFormData] = useState({
@@ -56,9 +57,21 @@ export default function AddNewStaffPage() {
     e.preventDefault();
     setErrorMessage(null);
 
-    inviteStaffMutation.mutate(
+    if (!formData.fullName.trim()) {
+      setErrorMessage("الاسم بالكامل مطلوب.");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setErrorMessage("البريد الإلكتروني مطلوب.");
+      return;
+    }
+
+    createStaffMutation.mutate(
       {
         email: formData.email,
+        password: formData.password.trim() || "Gym1234#",
+        fullName: formData.fullName,
         role: formData.role,
         branchId: formData.branchId.trim() ? formData.branchId : undefined,
       },
@@ -87,8 +100,8 @@ export default function AddNewStaffPage() {
             });
           }
         },
-        onError: (err: any) => {
-          setErrorMessage(err?.response?.data?.message || err?.message || "حدث خطأ أثناء إرسال الدعوة للموظف.");
+        onError: (err: unknown) => {
+          setErrorMessage(extractApiError(err) || "حدث خطأ أثناء إنشاء حساب الموظف.");
         },
       }
     );
@@ -294,17 +307,18 @@ export default function AddNewStaffPage() {
         {/* ── Form Actions (Buttons) ── */}
         <div className="flex flex-wrap items-center justify-start gap-4 pt-4 border-t border-zinc-100">
           <button
-            type="submit"
-            disabled={inviteStaffMutation.isPending}
+            type="button"
+            disabled={createStaffMutation.isPending}
+            onClick={(e) => handleSubmit(e, true)}
             className="flex items-center gap-2 bg-gym-yellow hover:bg-amber-400 text-gym-black font-cairo font-black text-sm px-8 py-3 rounded-xl shadow-[0_2px_12px_rgba(245,197,24,0.35)] transition-all cursor-pointer disabled:opacity-50"
           >
-            {inviteStaffMutation.isPending && <RefreshCw className="h-4 w-4 animate-spin" />}
-            <span>إرسال دعوة للموظف</span>
+            {createStaffMutation.isPending && <RefreshCw className="h-4 w-4 animate-spin" />}
+            <span>إنشاء حساب الموظف</span>
           </button>
 
           <button
             type="button"
-            disabled={inviteStaffMutation.isPending}
+            disabled={createStaffMutation.isPending}
             onClick={(e) => handleSubmit(e, false)}
             className="bg-white hover:bg-zinc-50 text-zinc-800 font-cairo font-bold text-sm px-6 py-3 rounded-xl border border-zinc-200 shadow-xs transition-all cursor-pointer disabled:opacity-50"
           >

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useAuth } from "@/shared/auth/AuthContext";
 import { signupOwner } from "../api/auth.api";
 import type { SignupFormValues } from "../schemas";
+import { extractApiError } from "@/lib/utils";
 
 export function useSignup() {
   const router = useRouter();
@@ -37,18 +38,4 @@ export function useSignup() {
     serverError,
     clearServerError: () => setServerError(null),
   };
-}
-
-function extractApiError(error: unknown): string | null {
-  if (typeof error === "object" && error !== null) {
-    const e = error as { response?: { data?: { errors?: Record<string, string[]>; detail?: string; title?: string } } };
-    const data = e.response?.data;
-    if (data?.errors) {
-      const first = Object.values(data.errors).flat()[0];
-      if (first) return first;
-    }
-    if (data?.detail) return data.detail;
-    if (data?.title) return data.title;
-  }
-  return null;
 }

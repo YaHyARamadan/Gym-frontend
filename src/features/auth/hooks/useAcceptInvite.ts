@@ -7,6 +7,7 @@ import { useAuth } from "@/shared/auth/AuthContext";
 import { acceptInvite } from "../api/auth.api";
 import type { AcceptInviteFormValues } from "../schemas";
 import type { UserRole } from "@/types/api";
+import { extractApiError } from "@/lib/utils";
 
 const ROLE_HOME: Record<UserRole, string> = {
   Owner: "/dashboard/owner",
@@ -60,24 +61,3 @@ function parseTokenRole(token: string): UserRole | null {
   }
 }
 
-function extractApiError(error: unknown): string | null {
-  if (typeof error === "object" && error !== null) {
-    const e = error as {
-      response?: {
-        data?: {
-          errors?: Record<string, string[]>;
-          detail?: string;
-          title?: string;
-        };
-      };
-    };
-    const data = e.response?.data;
-    if (data?.errors) {
-      const first = Object.values(data.errors).flat()[0];
-      if (first) return first;
-    }
-    if (data?.detail) return data.detail;
-    if (data?.title) return data.title;
-  }
-  return null;
-}

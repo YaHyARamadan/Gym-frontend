@@ -23,7 +23,7 @@ import Link from "next/link";
 import { useUsers, usePendingInvites } from "@/features/owner/hooks/useStaff";
 import type { UserDto } from "@/features/owner/types";
 
-export default function StaffPage() {
+export default function BranchStaffPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
   const [selectedGender, setSelectedGender] = useState("all");
@@ -34,6 +34,7 @@ export default function StaffPage() {
   const { data: users, isLoading: isUsersLoading, error: usersError, refetch } = useUsers();
   const { data: pendingInvites } = usePendingInvites();
 
+  // Combine staff and pending invites if available or display unified staff list
   const staffList = useMemo(() => {
     return users || [];
   }, [users]);
@@ -149,7 +150,7 @@ export default function StaffPage() {
 
         {/* CTA Button */}
         <Link
-          href="/dashboard/owner/staff/new"
+          href="/dashboard/branch-manager/staff/new"
           className="flex items-center justify-center gap-2 bg-gym-yellow hover:bg-amber-400 text-gym-black font-cairo font-black text-xs sm:text-sm px-5 py-3 rounded-xl shadow-[0_2px_12px_rgba(245,197,24,0.35)] transition-all cursor-pointer"
         >
           <Plus className="h-4.5 w-4.5 stroke-[2.5]" />

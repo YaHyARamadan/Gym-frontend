@@ -36,6 +36,22 @@ export function useInviteStaff() {
   });
 }
 
+export function useCreateDirectStaff() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      email: string;
+      password: string;
+      fullName: string;
+      role: string;
+      branchId?: string;
+    }) => import("../api/owner.api").then((m) => m.createDirectStaff(payload)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
+
 export function useRevokeInvite() {
   const queryClient = useQueryClient();
   return useMutation({

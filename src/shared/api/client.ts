@@ -16,6 +16,16 @@ apiClient.interceptors.request.use((config) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
+
+  // Ensure Content-Type is always set for mutating requests
+  // This prevents 415 Unsupported Media Type from .NET [FromBody] endpoints
+  const mutatingMethods = ["post", "put", "patch"];
+  if (config.method && mutatingMethods.includes(config.method.toLowerCase())) {
+    if (!config.headers["Content-Type"]) {
+      config.headers["Content-Type"] = "application/json";
+    }
+  }
+
   return config;
 });
 

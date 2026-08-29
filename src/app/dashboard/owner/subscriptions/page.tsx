@@ -279,7 +279,7 @@ export default function SubscriptionsPage() {
                       <div className="flex items-center justify-center gap-1.5">
                         {row.status === "Expired" && (
                           <button
-                            onClick={() => renewMutation.mutate(row.id)}
+                            onClick={() => renewMutation.mutate({ subscriptionId: row.id })}
                             disabled={renewMutation.isPending}
                             className="px-2.5 py-1 text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-300 transition-colors cursor-pointer disabled:opacity-50"
                           >

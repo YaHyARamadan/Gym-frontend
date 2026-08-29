@@ -31,6 +31,7 @@ export interface CreateBranchPayload {
   address?: string;
   phone?: string;
   managerUserId?: string;
+  isActive?: boolean;
 }
 
 export interface UpdateBranchPayload {
@@ -39,6 +40,7 @@ export interface UpdateBranchPayload {
   address?: string;
   phone?: string;
   managerUserId?: string;
+  isActive: boolean;
 }
 
 // ── Invites ──

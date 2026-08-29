@@ -69,6 +69,17 @@ export async function deactivateUser(id: string): Promise<void> {
   await apiClient.patch(`/api/users/${id}/deactivate`);
 }
 
+export async function createDirectStaff(payload: {
+  email: string;
+  password: string;
+  fullName: string;
+  role: string;
+  branchId?: string;
+}): Promise<{ id: string }> {
+  const res = await apiClient.post<{ id: string }>("/api/users/staff", payload);
+  return res.data;
+}
+
 // ── Members ──────────────────────────────────────────────────────────────
 export async function getMembers(params?: {
   branchId?: string;
@@ -82,8 +93,9 @@ export async function getMembers(params?: {
 }
 
 export async function createMember(payload: CreateMemberPayload): Promise<string> {
-  const res = await apiClient.post<string>("/api/members", payload);
-  return res.data;
+  const res = await apiClient.post<any>("/api/members", payload);
+  if (typeof res.data === "string") return res.data;
+  return res.data?.id || res.data?.Id || "";
 }
 
 export async function deactivateMember(id: string): Promise<void> {
@@ -139,6 +151,37 @@ export async function getMemberGrowthReport(branchId?: string): Promise<MemberGr
 }
 
 // ── Subscriptions ────────────────────────────────────────────────────────
+export interface CreateSubscriptionPayload {
+  memberId: string;
+  membershipPlanId: string;
+  startDate?: string;
+  amountPaid: number;
+  notes?: string;
+}
+
+export async function createSubscription(payload: CreateSubscriptionPayload): Promise<void> {
+  await apiClient.post("/api/subscriptions", {
+    MemberId: payload.memberId,
+    MembershipPlanId: payload.membershipPlanId,
+    StartDate: payload.startDate || new Date().toISOString(),
+    AmountPaid: payload.amountPaid,
+    Notes: payload.notes || null,
+  });
+}
+
+export interface MembershipPlanSummaryDto {
+  id: string;
+  name: string;
+  price: number;
+  durationDays: number;
+  isActive: boolean;
+}
+
+export async function getMembershipPlans(): Promise<PaginatedList<MembershipPlanSummaryDto>> {
+  const res = await apiClient.get<PaginatedList<MembershipPlanSummaryDto>>("/api/membership-plans");
+  return res.data;
+}
+
 export async function getSubscriptions(params?: {
   branchId?: string;
   searchTerm?: string;
@@ -152,8 +195,20 @@ export async function getSubscriptions(params?: {
   return res.data;
 }
 
-export async function renewSubscription(id: string): Promise<void> {
-  await apiClient.post(`/api/subscriptions/${id}/renew`);
+export interface RenewSubscriptionPayload {
+  subscriptionId: string;
+  newMembershipPlanId?: string;
+  amountPaid?: number;
+  notes?: string;
+}
+
+export async function renewSubscription(payload: RenewSubscriptionPayload): Promise<void> {
+  await apiClient.post(`/api/subscriptions/${payload.subscriptionId}/renew`, {
+    SubscriptionId: payload.subscriptionId,
+    NewMembershipPlanId: payload.newMembershipPlanId || null,
+    AmountPaid: payload.amountPaid ?? 0,
+    Notes: payload.notes || null,
+  });
 }
 
 export async function freezeSubscription(id: string): Promise<void> {
